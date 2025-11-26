@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.student import Student
 from app.schemas.student import StudentCreate, StudentUpdate
+from app.models.subject import Subject
 
 # Función para obtener un alumno por ID
 def get_student(db: Session, student_id: int):
@@ -55,3 +56,16 @@ def delete_student(db: Session, student_id: int):
     db.delete(db_student)
     db.commit()
     return db_student
+
+
+
+def enroll_student_to_subject(db: Session, student_id: int, subject_id: int):
+
+    student = db.query(Student).filter(Student.id == student_id).first()
+    subject = db.query(Subject).filter(Subject.id == subject_id).first()
+    if not student or not subject:
+        return None 
+    student.subjects.append(subject) 
+    db.commit()
+    db.refresh(student)
+    return student
