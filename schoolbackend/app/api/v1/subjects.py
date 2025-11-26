@@ -18,14 +18,13 @@ def create_subject(
 ):
     # --- INICIO DE VALIDACIÓN ---
     
-    # 1. Buscamos al usuario que nos mandaron en 'teacher_id'
+  
     teacher = crud_user.get_user(db, user_id=subject.teacher_id)
     
-    # 2. Verificamos si existe
+ 
     if not teacher:
         raise HTTPException(status_code=404, detail="El ID del profesor no existe")
-    
-    # 3. VERIFICAMOS EL ROL (Aquí está la protección que pediste) 🛡️
+   
     if teacher.role != "profesor":
         raise HTTPException(
             status_code=400, 

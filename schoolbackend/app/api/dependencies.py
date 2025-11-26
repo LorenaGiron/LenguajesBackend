@@ -12,9 +12,8 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/v1/auth/login/access-token")
 
 def get_current_user(
     db: Session = Depends(get_db),
-    token: str = Depends(oauth2_scheme) 
+    token: str = Depends(oauth2_scheme) # <--- Aquí el guardia exige el token
 ):
-
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="No se pudieron validar las credenciales",
@@ -22,7 +21,6 @@ def get_current_user(
     )
     
     try:
-        # Decodificamos el token con la clave secreta
         payload = jwt.decode(token, security.SECRET_KEY, algorithms=[security.ALGORITHM])
         email: str = payload.get("sub")
         if email is None:
@@ -33,4 +31,5 @@ def get_current_user(
     user = crud_user.get_user_by_email(db, email=email)
     if user is None:
         raise credentials_exception
+        
     return user

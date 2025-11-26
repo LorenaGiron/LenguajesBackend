@@ -21,7 +21,6 @@ def create_grade(
     if not student:
         raise HTTPException(status_code=404, detail="El alumno no existe")
 
-   
     subject = crud_subject.get_subject(db, subject_id=grade.subject_id)
     if not subject:
         raise HTTPException(status_code=404, detail="La materia no existe")

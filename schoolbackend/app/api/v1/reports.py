@@ -14,7 +14,7 @@ def get_student_report(
     db: Session = Depends(get_db),
     current_user: User = Depends(dependencies.get_current_user)
 ):
-    
+   
     student = db.query(Student).filter(Student.id == student_id).first()
     if not student:
         raise HTTPException(status_code=404, detail="Alumno no encontrado")
@@ -24,9 +24,11 @@ def get_student_report(
     if not grades:
         average = 0
     else:
+     
         total_score = sum([grade.score for grade in grades])
         average = round(total_score / len(grades), 2)
 
+   
     subjects_data = []
     for grade in grades:
         subjects_data.append({
@@ -34,6 +36,7 @@ def get_student_report(
             "score": grade.score
         })
 
+    
     return {
         "student_name": f"{student.first_name} {student.last_name} {student.last_name2}",
         
