@@ -23,4 +23,4 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
 @router.get("/me", response_model=UserResponse)
 def read_users_me(current_user: User = Depends(dependencies.get_current_user)):
    
-    return current_user
+    return current_user   
