@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from app.db.session import get_db
 from app.schemas.user import UserCreate, UserResponse
 from app.crud import crud_user
+from app.api import dependencies
+from app.models.user import User
 
 router = APIRouter()
 
@@ -16,3 +18,9 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
     
     # 2. Creamos el usuario (la contraseña se encripta dentro del CRUD)
     return crud_user.create_user(db=db, user=user)
+
+
+@router.get("/me", response_model=UserResponse)
+def read_users_me(current_user: User = Depends(dependencies.get_current_user)):
+   
+    return current_user
