@@ -6,7 +6,7 @@ from app.db.session import get_db
 from app.schemas.student import StudentCreate, StudentResponse, StudentUpdate
 from app.crud import crud_student
 from app.models.user import User
-# 👇 1. IMPORTAMOS NUESTRO NUEVO ARCHIVO
+
 from app.api import dependencies 
 
 router = APIRouter()
@@ -17,7 +17,7 @@ router = APIRouter()
 def create_student(
     student: StudentCreate, 
     db: Session = Depends(get_db),
-    # 👇 2. EL GUARDIA VIGILA AQUÍ
+  
     current_user: User = Depends(dependencies.get_current_user) 
 ):
     db_student = crud_student.get_student_by_email(db, email=student.email)
@@ -30,7 +30,7 @@ def read_students(
     skip: int = 0, 
     limit: int = 100, 
     db: Session = Depends(get_db),
-    # 👇 3. EL GUARDIA VIGILA AQUÍ TAMBIÉN
+  
     current_user: User = Depends(dependencies.get_current_user) 
 ):
     return crud_student.get_students(db, skip=skip, limit=limit)
@@ -40,7 +40,7 @@ def update_student(
     student_id: int, 
     student_update: StudentUpdate, 
     db: Session = Depends(get_db),
-    # 👇 4. Y AQUÍ
+ 
     current_user: User = Depends(dependencies.get_current_user)
 ):
     updated_student = crud_student.update_student(db, student_id, student_update)
@@ -52,10 +52,27 @@ def update_student(
 def delete_student(
     student_id: int, 
     db: Session = Depends(get_db),
-    # 👇 5. Y FINALMENTE AQUÍ
+   
     current_user: User = Depends(dependencies.get_current_user)
 ):
     deleted_student = crud_student.delete_student(db, student_id)
     if not deleted_student:
         raise HTTPException(status_code=404, detail="Alumno no encontrado")
     return deleted_student
+
+
+
+
+
+@router.post("/{student_id}/enroll/{subject_id}", response_model=StudentResponse)
+def enroll_student(
+    student_id: int, 
+    subject_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user)
+):
+   
+    student = crud_student.enroll_student_to_subject(db, student_id, subject_id)
+    if not student:
+        raise HTTPException(status_code=404, detail="Alumno o Materia no encontrados")
+    return student
