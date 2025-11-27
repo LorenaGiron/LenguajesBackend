@@ -18,3 +18,6 @@ def get_grades_by_student(db: Session, student_id: int):
 
 def get_all_grades(db: Session, skip: int = 0, limit: int = 100):
     return db.query(Grade).offset(skip).limit(limit).all()
+
+def get_grades_by_subject(db: Session, subject_id: int):
+    return db.query(Grade).filter(Grade.subject_id == subject_id).all()
