@@ -5,6 +5,7 @@ from app.models.grade import Grade
 from app.models.student import Student
 from app.api import dependencies
 from app.models.user import User
+from app.models.subject import Subject
 
 router = APIRouter()
 
@@ -43,3 +44,21 @@ def get_student_report(
         "total_average": average,
         "grades": subjects_data
     }
+
+
+
+
+@router.get("/stats/students")
+def get_total_students(db: Session = Depends(get_db)):
+    total_students = db.query(Student).count()
+    return {"total": total_students}
+
+@router.get("/stats/subjects")
+def get_total_subjects(db: Session = Depends(get_db)):
+    total_subjects = db.query(Subject).count()
+    return {"total": total_subjects}
+
+@router.get("/stats/professors")
+def get_total_professors(db: Session = Depends(get_db)):
+    total_professors = db.query(User).filter(User.role == "profesor").count()
+    return {"total": total_professors}

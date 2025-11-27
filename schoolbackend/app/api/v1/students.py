@@ -33,6 +33,8 @@ def read_students(
   
     current_user: User = Depends(dependencies.get_current_user) 
 ):
+    
+    
     return crud_student.get_students(db, skip=skip, limit=limit)
 
 @router.put("/{student_id}", response_model=StudentResponse)

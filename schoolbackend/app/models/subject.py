@@ -19,5 +19,3 @@ class Subject(Base):
         secondary=student_subject_association, 
         back_populates="subjects"
     )
-
-
