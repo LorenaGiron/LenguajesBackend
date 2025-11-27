@@ -34,3 +34,11 @@ def read_student_grades(
     current_user: User = Depends(dependencies.get_current_user)
 ):
     return crud_grade.get_grades_by_student(db, student_id=student_id)
+
+@router.get("/by-subject/{subject_id}", response_model=List[GradeResponse])
+def read_grades_by_subject(
+    subject_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user)
+):
+    return crud_grade.get_grades_by_subject(db, subject_id=subject_id)
