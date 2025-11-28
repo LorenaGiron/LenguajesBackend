@@ -105,7 +105,7 @@ def get_subject_enrollment_report(
         "students_with_grades": students_with_grades,
     }
 
-
+#función para buscar el reporte de un estudiante por su nombre, apellido o email
 @router.get("/student-grades-search/{identifier}")
 def get_student_grades_report_by_identifier(
     identifier: str,
