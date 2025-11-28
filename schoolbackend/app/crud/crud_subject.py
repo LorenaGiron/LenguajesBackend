@@ -73,10 +73,24 @@ def update_subject(db: Session, subject_id: int, subject_update: SubjectUpdate):
 
 
 def delete_subject(db: Session, subject_id: int):
-    db_subject = db.query(Subject).filter(Subject.id == subject_id).first()
+    db_subject = (
+        db.query(Subject)
+        .options(joinedload(Subject.students))  # cargar asociaciones
+        .filter(Subject.id == subject_id)
+        .first()
+    )
     if not db_subject:
         return None
-        
-    db.delete(db_subject)
+
+    db_subject.students = []
+    db.add(db_subject)
     db.commit()
+
+    try:
+        db.delete(db_subject)
+        db.commit()
+    except Exception as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error al eliminar materia: {str(e)}")
+
     return db_subject

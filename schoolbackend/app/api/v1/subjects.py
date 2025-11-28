@@ -1,7 +1,7 @@
 from typing import List,Optional
 from fastapi import APIRouter, Depends, HTTPException, status, Response
 from sqlalchemy.orm import Session, joinedload, selectinload
-from sqlalchemy import func, select
+from sqlalchemy import func, select,or_
 from app.db.session import get_db
 from app.schemas.subject import SubjectCreate, SubjectResponse, SubjectUpdate, SubjectStudentAssignment
 from app.crud import crud_subject, crud_user
@@ -9,6 +9,7 @@ from app.models.user import User
 from app.api import dependencies
 from app.models.subject import Subject, student_subject_association
 from app.models.student import Student
+from app.models.grade import Grade
 
 router = APIRouter()
 
@@ -182,3 +183,5 @@ def delete_subject(
     if not deleted_subject:
         raise HTTPException(status_code=404, detail="Materia no encontrada")
     return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
