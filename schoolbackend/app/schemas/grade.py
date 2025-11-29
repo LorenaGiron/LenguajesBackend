@@ -13,7 +13,8 @@ class GradeCreate(GradeBase):
 class GradeResponse(GradeBase):
     id: int
     
-   
+class GradeUpdate(BaseModel):
+    score: float
     
     class Config:
         from_attributes = True

@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 from app.models.grade import Grade
-from app.schemas.grade import GradeCreate
+from app.schemas.grade import GradeCreate, GradeUpdate
 
 def create_grade(db: Session, grade: GradeCreate):
     db_grade = Grade(
@@ -21,3 +21,15 @@ def get_all_grades(db: Session, skip: int = 0, limit: int = 100):
 
 def get_grades_by_subject(db: Session, subject_id: int):
     return db.query(Grade).filter(Grade.subject_id == subject_id).all()
+
+
+def update_grade(db: Session, grade_id: int, grade_update: GradeUpdate):
+    db_grade = db.query(Grade).filter(Grade.id == grade_id).first()
+    if not db_grade:
+        return None
+    
+    db_grade.score = grade_update.score
+    db.add(db_grade)
+    db.commit()
+    db.refresh(db_grade)
+    return db_grade
