@@ -10,6 +10,7 @@ from app.api import dependencies
 from app.models.subject import Subject, student_subject_association
 from app.models.student import Student
 from app.models.grade import Grade
+from app.schemas.student import StudentResponse
 
 router = APIRouter()
 
@@ -114,39 +115,6 @@ def remove_student(subject_id: int, student_id: int, db: Session = Depends(get_d
     return subject
 
 
-@router.get("/teacher-load/", response_model=List[SubjectResponse])
-def read_teacher_subjects(
-    db: Session = Depends(get_db),
-    current_user: User = Depends(dependencies.get_current_user),
-    teacher_id: Optional[int] = None 
-):
-    
-    student_count_subquery = select(
-        student_subject_association.c.subject_id,
-        func.count(student_subject_association.c.student_id).label("student_count")
-    ).group_by(student_subject_association.c.subject_id).subquery()
-
-    query = (
-        db.query(Subject, student_count_subquery.c.student_count)
-        .outerjoin(student_count_subquery, Subject.id == student_count_subquery.c.subject_id)
-        .options(joinedload(Subject.teacher))
-        .options(selectinload(Subject.students))
-    )
-    
-    if teacher_id is not None:
-        query = query.filter(Subject.teacher_id == teacher_id)
-    
-
-    results = query.all()
-    
-    response_data = []
-    for subject, count in results:
-        subject.student_count = count or 0
-        response_data.append(
-        SubjectResponse.model_validate(subject, from_attributes=True)
-    )
-
-    return response_data
 
 
 

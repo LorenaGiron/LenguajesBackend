@@ -4,9 +4,11 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas.grade import GradeCreate, GradeResponse
-from app.crud import crud_grade, crud_student, crud_subject # Importamos todos los CRUDs
+from app.crud import crud_grade, crud_student, crud_subject
 from app.models.user import User
 from app.api import dependencies
+from app.schemas.grade import GradeUpdate
+
 
 router = APIRouter()
 
@@ -42,3 +44,16 @@ def read_grades_by_subject(
     current_user: User = Depends(dependencies.get_current_user)
 ):
     return crud_grade.get_grades_by_subject(db, subject_id=subject_id)
+
+
+@router.put("/{grade_id}", response_model=GradeResponse)
+def update_grade(
+    grade_id: int,
+    grade_update: GradeUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user)
+):
+    grade = crud_grade.update_grade(db, grade_id=grade_id, grade_update=grade_update)
+    if not grade:
+        raise HTTPException(status_code=404, detail="Calificación no encontrada")
+    return grade
