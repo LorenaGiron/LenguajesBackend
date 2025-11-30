@@ -17,9 +17,17 @@ from app.api.v1 import subjects
 from app.api.v1 import grades
 from app.api.v1 import reports 
 
-# Crear tablas en BD
-Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Mini-SICE API")
+
+# Crear tablas en BD (solo si la conexión está disponible)
+@app.on_event("startup")
+async def startup_event():
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Tablas de base de datos creadas/verificadas correctamente")
+    except Exception as e:
+        print(f"⚠️  Advertencia: No se pudo conectar a la base de datos: {e}")
+        print("   El servidor continuará funcionando, pero las operaciones de BD fallarán.")
 
 # --- CONFIGURACIÓN CORS------------------------------------------------------
 origins = [
