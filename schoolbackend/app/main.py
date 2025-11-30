@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware 
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.db.session import engine
 from app.db.base import Base
 
@@ -8,6 +9,7 @@ from app.models.student import Student
 from app.models.user import User
 from app.models.subject import Subject
 from app.models.grade import Grade
+from app.models.teacher_profile import TeacherProfile
 
 # Rutas
 from app.api.v1 import students
@@ -52,6 +54,12 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(subjects.router, prefix="/api/v1/subjects", tags=["Subjects"])
 app.include_router(grades.router, prefix="/api/v1/grades", tags=["Grades"])
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"]) # <--- CONECTADO
+
+# Montar directorio de archivos estáticos para servir fotos de perfil
+from pathlib import Path
+upload_dir = Path("uploads")
+upload_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/")
 def root():
