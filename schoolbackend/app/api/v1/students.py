@@ -134,3 +134,6 @@ def search_students_suggestions(q: str, db: Session = Depends(get_db)):
         )
     ).limit(10).all()
     return students
+
+
+
