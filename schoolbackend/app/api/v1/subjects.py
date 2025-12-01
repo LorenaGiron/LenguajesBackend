@@ -69,7 +69,74 @@ def read_subjects(db: Session = Depends(get_db)):
 
     return response_data
 
+# ---------------------------------------------------------
+# OBTENER ESTUDIANTES DE UNA MATERIA
+# ---------------------------------------------------------
+@router.get("/{subject_id}/students", response_model=List[StudentResponse])
+def read_subject_students(
+    subject_id: int, 
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user)
+):
+    
+    subject = crud_subject.get_subject(db, subject_id=subject_id)
 
+    if not subject:
+        raise HTTPException(status_code=404, detail="Materia no encontrada")
+        
+    if current_user.role == "profesor" and subject.teacher_id != current_user.id:
+        raise HTTPException(
+            status_code=403, 
+            detail="No tienes permiso para ver los alumnos de esta materia."
+        )
+
+   
+    return subject.students
+
+
+# ---------------------------------------------------------
+# OBTENER CARGA ACADÉMICA DEL PROFESOR
+# ---------------------------------------------------------
+@router.get("/teacher-load/", response_model=List[SubjectResponse])
+def read_teacher_subjects(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user),
+    teacher_id: Optional[int] = None 
+):
+    
+    student_count_subquery = select(
+        student_subject_association.c.subject_id,
+        func.count(student_subject_association.c.student_id).label("student_count")
+    ).group_by(student_subject_association.c.subject_id).subquery()
+
+    query = (
+        db.query(Subject, student_count_subquery.c.student_count)
+        .outerjoin(student_count_subquery, Subject.id == student_count_subquery.c.subject_id)
+        .options(joinedload(Subject.teacher))
+        .options(selectinload(Subject.students))
+    )
+    
+    if current_user.role == "profesor":
+        filter_id = current_user.id
+    elif teacher_id is not None:
+        filter_id = teacher_id
+    else:
+        filter_id = None
+    
+    if filter_id is not None:
+        query = query.filter(Subject.teacher_id == filter_id)
+    
+
+    results = query.all()
+    
+    response_data = []
+    for subject, count in results:
+        subject.student_count = count or 0
+        response_data.append(
+        SubjectResponse.model_validate(subject, from_attributes=True)
+    )
+
+    return response_data
 # ---------------------------------------------------------
 # REEMPLAZAR LISTA COMPLETA DE ESTUDIANTES
 # ---------------------------------------------------------
