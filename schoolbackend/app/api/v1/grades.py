@@ -4,9 +4,11 @@ from sqlalchemy.orm import Session
 
 from app.db.session import get_db
 from app.schemas.grade import GradeCreate, GradeResponse
-from app.crud import crud_grade, crud_student, crud_subject # Importamos todos los CRUDs
+from app.crud import crud_grade, crud_student, crud_subject
 from app.models.user import User
 from app.api import dependencies
+from app.schemas.grade import GradeUpdate
+
 
 router = APIRouter()
 
@@ -16,14 +18,11 @@ def create_grade(
     db: Session = Depends(get_db),
     current_user: User = Depends(dependencies.get_current_user)
 ):
-    # 1. Validar que el Alumno exista
+    
     student = crud_student.get_student(db, student_id=grade.student_id)
     if not student:
         raise HTTPException(status_code=404, detail="El alumno no existe")
 
-    # 2. Validar que la Materia exista
-    # Nota: Necesitamos una función get_subject en crud_subject. 
-    # (Si no la tienes, te la paso abajo para que la agregues)
     subject = crud_subject.get_subject(db, subject_id=grade.subject_id)
     if not subject:
         raise HTTPException(status_code=404, detail="La materia no existe")
@@ -37,3 +36,24 @@ def read_student_grades(
     current_user: User = Depends(dependencies.get_current_user)
 ):
     return crud_grade.get_grades_by_student(db, student_id=student_id)
+
+@router.get("/by-subject/{subject_id}", response_model=List[GradeResponse])
+def read_grades_by_subject(
+    subject_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user)
+):
+    return crud_grade.get_grades_by_subject(db, subject_id=subject_id)
+
+
+@router.put("/{grade_id}", response_model=GradeResponse)
+def update_grade(
+    grade_id: int,
+    grade_update: GradeUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user)
+):
+    grade = crud_grade.update_grade(db, grade_id=grade_id, grade_update=grade_update)
+    if not grade:
+        raise HTTPException(status_code=404, detail="Calificación no encontrada")
+    return grade

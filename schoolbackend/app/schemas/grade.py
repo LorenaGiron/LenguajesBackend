@@ -13,8 +13,8 @@ class GradeCreate(GradeBase):
 class GradeResponse(GradeBase):
     id: int
     
-    # Esto es útil para mostrar nombres en lugar de solo IDs en el frontend
-    # (Lo veremos más adelante si lo necesitas)
+class GradeUpdate(BaseModel):
+    score: float
     
     class Config:
         from_attributes = True

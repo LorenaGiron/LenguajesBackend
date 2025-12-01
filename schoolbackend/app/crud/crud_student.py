@@ -1,7 +1,8 @@
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session,joinedload
 from app.models.student import Student
 from app.schemas.student import StudentCreate, StudentUpdate
 from app.models.subject import Subject
+from typing import List
 
 # Función para obtener un alumno por ID
 def get_student(db: Session, student_id: int):
@@ -69,3 +70,13 @@ def enroll_student_to_subject(db: Session, student_id: int, subject_id: int):
     db.commit()
     db.refresh(student)
     return student
+
+
+def get_students(db: Session, skip: int = 0, limit: int = 100) -> List[Student]:
+   
+    return db.query(Student)\
+             .options(joinedload(Student.subjects))\
+             .offset(skip)\
+             .limit(limit)\
+             .all()
+
