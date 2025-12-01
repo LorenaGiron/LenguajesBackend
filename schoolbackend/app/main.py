@@ -18,6 +18,7 @@ from app.api.v1 import auth
 from app.api.v1 import subjects
 from app.api.v1 import grades
 from app.api.v1 import reports 
+from app.api.v1 import teacher
 
 app = FastAPI(title="Mini-SICE API")
 
@@ -53,7 +54,8 @@ app.include_router(users.router, prefix="/api/v1/users", tags=["Users"])
 app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(subjects.router, prefix="/api/v1/subjects", tags=["Subjects"])
 app.include_router(grades.router, prefix="/api/v1/grades", tags=["Grades"])
-app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"]) # <--- CONECTADO
+app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"])
+app.include_router(teacher.router, prefix="/api/v1/teacher", tags=["Teacher"])
 
 # Montar directorio de archivos estáticos para servir fotos de perfil
 from pathlib import Path
