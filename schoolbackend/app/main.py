@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware 
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from app.db.session import engine
 from app.db.base import Base
 
@@ -8,6 +9,7 @@ from app.models.student import Student
 from app.models.user import User
 from app.models.subject import Subject
 from app.models.grade import Grade
+from app.models.teacher_profile import TeacherProfile
 
 # Rutas
 from app.api.v1 import students
@@ -17,9 +19,17 @@ from app.api.v1 import subjects
 from app.api.v1 import grades
 from app.api.v1 import reports 
 
-# Crear tablas en BD
-Base.metadata.create_all(bind=engine)
 app = FastAPI(title="Mini-SICE API")
+
+# Crear tablas en BD (solo si la conexión está disponible)
+@app.on_event("startup")
+async def startup_event():
+    try:
+        Base.metadata.create_all(bind=engine)
+        print("✅ Tablas de base de datos creadas/verificadas correctamente")
+    except Exception as e:
+        print(f"⚠️  Advertencia: No se pudo conectar a la base de datos: {e}")
+        print("   El servidor continuará funcionando, pero las operaciones de BD fallarán.")
 
 # --- CONFIGURACIÓN CORS------------------------------------------------------
 origins = [
@@ -44,6 +54,12 @@ app.include_router(auth.router, prefix="/api/v1/auth", tags=["Auth"])
 app.include_router(subjects.router, prefix="/api/v1/subjects", tags=["Subjects"])
 app.include_router(grades.router, prefix="/api/v1/grades", tags=["Grades"])
 app.include_router(reports.router, prefix="/api/v1/reports", tags=["Reports"]) # <--- CONECTADO
+
+# Montar directorio de archivos estáticos para servir fotos de perfil
+from pathlib import Path
+upload_dir = Path("uploads")
+upload_dir.mkdir(exist_ok=True)
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 
 @app.get("/")
 def root():

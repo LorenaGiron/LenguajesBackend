@@ -10,6 +10,68 @@ from sqlalchemy import func, select, or_
 
 router = APIRouter()
 
+# NUEVO ENDPOINT - REPORTE COMPLETO
+@router.get("/student-full/{student_id}")
+def get_student_full_report(
+    student_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(dependencies.get_current_user)
+):
+    """
+    Reporte para el profesor completo del estudiante con materias inscritas, calificaciones y promedio 
+    """
+    # Cargar estudiante con sus materias inscritas
+    student = db.query(Student).options(
+        joinedload(Student.subjects).joinedload(Subject.teacher)
+    ).filter(Student.id == student_id).first()
+    
+    if not student:
+        raise HTTPException(status_code=404, detail="Alumno no encontrado")
+
+    # Obtener calificaciones
+    grades = db.query(Grade).filter(Grade.student_id == student_id).all()
+
+    # Calcular promedio
+    if not grades:
+        average = 0
+    else:
+        total_score = sum([grade.score for grade in grades])
+        average = round(total_score / len(grades), 2)
+
+    # Formatear materias inscritas (con información del profesor)
+    subjects_data = []
+    for subject in student.subjects:
+        subjects_data.append({
+            "id": subject.id,
+            "name": subject.name,
+            "teacher": {
+                "id": subject.teacher.id if subject.teacher else None,
+                "full_name": subject.teacher.full_name if subject.teacher else "No asignado"
+            }
+        })
+
+    # Formatear calificaciones
+    grades_data = []
+    for grade in grades:
+        grades_data.append({
+            "id": grade.id,
+            "subject_id": grade.subject_id,
+            "score": grade.score
+        })
+
+    return {
+        "student": {
+            "id": student.id,
+            "first_name": student.first_name,
+            "last_name": student.last_name,
+            "last_name2": student.last_name2,
+            "email": student.email
+        },
+        "subjects": subjects_data,
+        "grades": grades_data,
+        "total_average": average
+    }
+
 @router.get("/student/{student_id}")
 def get_student_report(
     student_id: int,
